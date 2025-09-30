@@ -6,7 +6,7 @@ This project proposal presents a simulation study of ecosystem dynamics, focusin
 ## Status
 - Initial repo setup complete
 - Entity classes (`Prey`, `Predator`, `Environment`) created 
-- Core models to be added
+- Logistic growth with Holling II predation implemented   
 
 ## Installation Instructions
 
