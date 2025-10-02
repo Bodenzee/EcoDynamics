@@ -22,3 +22,4 @@ This project proposal presents a simulation study of ecosystem dynamics, focusin
 git clone https://github.com/Bodenzee/EcoDynamics
 cd EcoDynamics
 pip install -r requirements.txt
+run "main.py"
