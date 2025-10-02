@@ -17,7 +17,7 @@ This project proposal presents a simulation study of ecosystem dynamics, focusin
 - EcoDynamics/entities.py: Defines Prey,Predator, and environment
 - EcoDynamics/main.py: Runs models and plots graphs
 - EcoDynamics/models.py: Contains ODE Models
-- EcoDynamics/simulation.py:Collects population data, SciPy ODE solver
+- EcoDynamics/simulation.py: Collects population data, SciPy ODE solver
 
 ## Installation Instructions
 
