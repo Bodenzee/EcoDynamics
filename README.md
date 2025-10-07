@@ -10,25 +10,39 @@ This project proposal presents a simulation study of ecosystem dynamics, focusin
 - Data Collector
 - Visualization utilizing Matplotlib functioning
 - Simulation engine utilizing SciPy ODE implemented
+ABM Development
+- Implement GridEnvironment class
+- Implement Prey movement & reproduction
+- Implement Predator hunting & starvation
+- Energy/food balance mechanics
+- Add random seed control
+- Implement step/update loop
+- Detect and log extinction events
+  
+## To do:
+- Data Collection 
+- Create DataCollector module
+-  Write CSV/JSON exports
+-   Record metadata for reproducibility
 
-- To do:
--Integrate object-oriented entities into ABM simulation.
+Parameterization & Batch Runs 
+- Build config_loader.py with CLI overrides
+- Implement run_all.py batch runner
+- Save results into master index JSON
 
--Implement grid-based spatial interactions.
-
--Compare ODE and ABM results across parameters.
-
--Add multi-run stochastic analysis.
-
--Validate ODE equilibria vs. theoretical results.
+Testing & Validation 
+- Compare ABM averages vs. Lotka–Volterra equilibrium
+- Perform 10+ runs with varying parameters
+- Generate comparative population plots
   
 ## Project Structure
 - EcoDynamics/data_collector.py: Tracks results from simulation
-- EcoDynamics/entities.py: Defines Prey,Predator, and environment
+- EcoDynamics/entities.py: Prey and Predator agent definitions
 - EcoDynamics/main.py: Runs models and plots graphs
 - EcoDynamics/models.py: Contains ODE Models
 - EcoDynamics/simulation.py: Collects population data, SciPy ODE solver
-
+- EcoDynamics/ABM.py: ABM environment and simulation controller
+  
 ## Installation Instructions
 
 ### Requirements
