@@ -10,7 +10,17 @@ This project proposal presents a simulation study of ecosystem dynamics, focusin
 - Data Collector
 - Visualization utilizing Matplotlib functioning
 - Simulation engine utilizing SciPy ODE implemented
-- To do: ABM Model, parameter configuration, expand visualization with resource tracking and phase plots
+
+- To do:
+-Integrate object-oriented entities into ABM simulation.
+
+-Implement grid-based spatial interactions.
+
+-Compare ODE and ABM results across parameters.
+
+-Add multi-run stochastic analysis.
+
+-Validate ODE equilibria vs. theoretical results.
   
 ## Project Structure
 - EcoDynamics/data_collector.py: Tracks results from simulation
