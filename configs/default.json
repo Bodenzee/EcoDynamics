@@ -1,0 +1,16 @@
+{
+  "model": "abm",
+  "grid_width": 20,
+  "grid_height": 20,
+  "initial_prey": 100,
+  "initial_predators": 20,
+  "prey_reproduce_prob": 0.05,
+  "pred_reproduce_prob": 0.02,
+  "pred_mortality_prob": 0.01,
+  "pred_energy_gain": 3.0,
+  "prey_energy_gain": 0.5,
+  "steps": 200,
+  "seed": 42,
+  "out_dir": "data",
+  "run_id": 1
+}
