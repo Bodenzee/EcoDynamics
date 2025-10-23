@@ -27,13 +27,14 @@ class ABMSimulation:
         self.prey_list = []
         self.pred_list = []
         self.next_agent_id = 1
-        self._spawn_initial_agents(config["initial_prey"], config["initial_predators"])
 
         self.prey_reproduce_prob = config["prey_reproduce_prob"]
         self.pred_reproduce_prob = config["pred_reproduce_prob"]
         self.pred_mortality_prob = config["pred_mortality_prob"]
         self.pred_energy_gain = config["pred_energy_gain"]
         self.prey_energy_gain = config["prey_energy_gain"]
+
+        self._spawn_initial_agents(config["initial_prey"], config["initial_predators"])
 
     def _spawn_initial_agents(self, n_prey, n_pred):
         for _ in range(n_prey):
