@@ -1,22 +1,17 @@
-import numpy as np
 from scipy.integrate import solve_ivp
-from data_collector import DataCollector
+import numpy as np
 
-class Simulation:
-    def __init__(self, model, params, t_span=(0, 50), initial_state=(10, 5)):
-        self.model = model
+class ODESimulation:
+    def __init__(self, model_func, params: dict, t_span=(0,50), initial=(10,5), n_steps=500):
+        self.model = model_func
         self.params = params
         self.t_span = t_span
-        self.initial_state = initial_state
-        self.data_collector = DataCollector()
+        self.initial = initial
+        self.n_steps = n_steps
 
     def run(self):
-        def wrapped_model(t, state):
-            return self.model(t, state, **self.params)
-
-        sol = solve_ivp(wrapped_model, self.t_span, self.initial_state, dense_output=True)
-
-        for t, prey, pred in zip(sol.t, sol.y[0], sol.y[1]):
-            self.data_collector.record(t, prey, pred)
-
-        return self.data_collector.get_data()
+        t0, t1 = self.t_span
+        t_eval = np.linspace(t0, t1, self.n_steps)
+        sol = solve_ivp(lambda t, y: self.model(t, y, **self.params), (t0, t1), list(self.initial), t_eval=t_eval)
+        data = {"time": sol.t.tolist(), "prey": sol.y[0].tolist(), "predator": sol.y[1].tolist()}
+        return data
