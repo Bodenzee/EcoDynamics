@@ -30,21 +30,21 @@ This project proposal presents a simulation study of ecosystem dynamics, focusin
 - Testing & Validation 
 
 ## Project Structure
-- **EcoDynamics/abm.py – ABM environment and simulation controller  
-- **EcoDynamics/data_collector.py – Tracks and exports simulation data  
-- **EcoDynamics/entities.py – Defines Prey and Predator agent behaviors  
-- **EcoDynamics/grid_environment.py – 2D grid for agent movement and interactions  
-- **EcoDynamics/models/lotka_volterra.py – Lotka–Volterra predator–prey model  
-- **EcoDynamics/models/logistic_hollingII.py – Logistic growth with Holling II predation  
-- **EcoDynamics/simulation.py – SciPy-based ODE solver and population data collection  
-- **EcoDynamics/config_loader.py – Loads and manages simulation parameters  
-- **EcoDynamics/main.py – Runs models and plots results  
-- **EcoDynamics/run_all.py – Batch execution script for multiple simulations  
-- **EcoDynamics/plot_results.py – Visualizes population trends using Matplotlib  
-- **EcoDynamics/data/ – Stores time-series, summary, and configuration outputs  
-- **EcoDynamics/configs/ – Contains JSON configuration files for different runs  
-- **EcoDynamics/requirements.txt – Lists Python dependencies  
-- **EcoDynamics/README.md – Project documentation  
+- **EcoDynamics/abm.py** – ABM environment and simulation controller  
+- **EcoDynamics/data_collector.py** – Tracks and exports simulation data  
+- **EcoDynamics/entities.py** – Defines Prey and Predator agent behaviors  
+- **EcoDynamics/grid_environment.py** – 2D grid for agent movement and interactions  
+- **EcoDynamics/models/lotka_volterra.py** – Lotka–Volterra predator–prey model  
+- **EcoDynamics/models/logistic_hollingII.py** – Logistic growth with Holling II predation  
+- **EcoDynamics/simulation.py** – SciPy-based ODE solver and population data collection  
+- **EcoDynamics/config_loader.py** – Loads and manages simulation parameters  
+- **EcoDynamics/main.py** – Runs models and plots results  
+- **EcoDynamics/run_all.py** – Batch execution script for multiple simulations  
+- **EcoDynamics/plot_results.py** – Visualizes population trends using Matplotlib  
+- **EcoDynamics/data/** – Stores time-series, summary, and configuration outputs  
+- **EcoDynamics/configs/** – Contains JSON configuration files for different runs  
+- **EcoDynamics/requirements.txt** – Lists Python dependencies  
+- **EcoDynamics/README.md** – Project documentation  
   
 ## Installation Instructions
 
