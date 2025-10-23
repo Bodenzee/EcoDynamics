@@ -10,13 +10,13 @@ class Prey:
     reproduce_prob: float
 
     def step(self, env):
+        # random move (4-neighborhood + stay)
         dx, dy = random.choice([(0,0),(1,0),(-1,0),(0,1),(0,-1)])
-        nx = (self.x + dx) % env.width
-        ny = (self.y + dy) % env.height
-        self.x, self.y = nx, ny
+        self.x = (self.x + dx) % env.width
+        self.y = (self.y + dy) % env.height
 
     def try_reproduce(self):
-        if random.random() < self.reproduce_prob and self.energy > 1.0:
+        if self.energy > 1.0 and random.random() < self.reproduce_prob:
             self.energy /= 2.0
             return True
         return False
@@ -32,15 +32,14 @@ class Predator:
 
     def step(self, env):
         dx, dy = random.choice([(0,0),(1,0),(-1,0),(0,1),(0,-1)])
-        nx = (self.x + dx) % env.width
-        ny = (self.y + dy) % env.height
-        self.x, self.y = nx, ny
+        self.x = (self.x + dx) % env.width
+        self.y = (self.y + dy) % env.height
 
     def try_reproduce(self):
-        if random.random() < self.reproduce_prob and self.energy > 2.0:
+        if self.energy > 2.0 and random.random() < self.reproduce_prob:
             self.energy /= 2.0
             return True
         return False
 
-    def try_starve(self):
+    def should_die(self):
         return self.energy <= 0 or random.random() < self.mortality_prob
