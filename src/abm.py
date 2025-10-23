@@ -1,117 +1,116 @@
+
 import random
 import time
-import json
-from collections import defaultdict
 from src.entities import Prey, Predator
-
-class GridEnvironment:
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.cells = defaultdict(list)
-
-    def clear_cells(self):
-        self.cells = defaultdict(list)
-
-    def place_agent(self, agent):
-        self.cells[(agent.x, agent.y)].append(agent)
+from src.grid_environment import GridEnvironment
 
 class ABMSimulation:
-    def __init__(self, config, data_collector, seed=None):
+    def __init__(self, config: dict, data_collector, seed=None):
         if seed is not None:
             random.seed(seed)
         self.config = config
         self.dc = data_collector
         self.step_count = 0
-        self.grid = GridEnvironment(config["grid_width"], config["grid_height"])
-        self.prey_list = []
-        self.pred_list = []
-        self.next_agent_id = 1
+        self.grid = GridEnvironment(config.get("grid_width", 20), config.get("grid_height", 20))
+        self.prey = []
+        self.preds = []
+        self.next_id = 1
 
-        self.prey_reproduce_prob = config["prey_reproduce_prob"]
-        self.pred_reproduce_prob = config["pred_reproduce_prob"]
-        self.pred_mortality_prob = config["pred_mortality_prob"]
-        self.pred_energy_gain = config["pred_energy_gain"]
-        self.prey_energy_gain = config["prey_energy_gain"]
+        self.prey_reproduce_prob = config.get("prey_reproduce_prob", 0.05)
+        self.pred_reproduce_prob = config.get("pred_reproduce_prob", 0.02)
+        self.pred_mortality_prob = config.get("pred_mortality_prob", 0.01)
+        self.pred_energy_gain = config.get("pred_energy_gain", 3.0)
+        self.prey_energy_gain = config.get("prey_energy_gain", 0.5)
 
-        self._spawn_initial_agents(config["initial_prey"], config["initial_predators"])
+        self._spawn_initial_agents(config.get("initial_prey", 100), config.get("initial_predators", 20))
 
-    def _spawn_initial_agents(self, n_prey, n_pred):
-        for _ in range(n_prey):
+    def _spawn_initial_agents(self, n_prey: int, n_pred: int):
+        for _ in range(int(n_prey)):
             x = random.randrange(self.grid.width)
             y = random.randrange(self.grid.height)
-            prey = Prey(self.next_agent_id, x, y, 1.0, self.prey_reproduce_prob)
-            self.next_agent_id += 1
-            self.prey_list.append(prey)
-        for _ in range(n_pred):
+            p = Prey(self.next_id, x, y, energy=1.0, reproduce_prob=self.prey_reproduce_prob)
+            self.next_id += 1
+            self.prey.append(p)
+        for _ in range(int(n_pred)):
             x = random.randrange(self.grid.width)
             y = random.randrange(self.grid.height)
-            pred = Predator(self.next_agent_id, x, y, 2.0,
-                            self.pred_reproduce_prob, self.pred_mortality_prob)
-            self.next_agent_id += 1
-            self.pred_list.append(pred)
+            pr = Predator(self.next_id, x, y, energy=2.0,
+                          reproduce_prob=self.pred_reproduce_prob, mortality_prob=self.pred_mortality_prob)
+            self.next_id += 1
+            self.preds.append(pr)
 
     def step(self):
         self.step_count += 1
-        self.grid.clear_cells()
-        for a in self.prey_list + self.pred_list:
-            self.grid.place_agent(a)
+        self.grid.clear()
+        for a in self.prey + self.preds:
+            self.grid.place(a)
 
-        new_prey = []
         events = []
-        for prey in list(self.prey_list):
-            prey.step(self.grid)
-            prey.energy += self.prey_energy_gain
-            if prey.try_reproduce():
-                child = Prey(self.next_agent_id, prey.x, prey.y,
-                             prey.energy/2.0, self.prey_reproduce_prob)
-                self.next_agent_id += 1
+        
+        new_prey = []
+        
+        for p in list(self.prey):
+            p.step(self.grid)
+            p.energy += self.prey_energy_gain
+            if p.try_reproduce():
+                child = Prey(self.next_id, p.x, p.y, energy=p.energy/2.0, reproduce_prob=self.prey_reproduce_prob)
+                self.next_id += 1
                 new_prey.append(child)
-                events.append({"type": "birth", "species": "prey", "time": self.step_count})
-        self.prey_list.extend(new_prey)
+                events.append({"type":"birth","species":"prey","agent":child.id,"time":self.step_count})
+        self.prey.extend(new_prey)
 
         new_preds = []
         dead_preds = []
-        for pred in list(self.pred_list):
-            pred.step(self.grid)
-            same = [p for p in self.prey_list if (p.x, p.y) == (pred.x, pred.y)]
-            if same:
-                victim = random.choice(same)
-                pred.energy += self.pred_energy_gain
+        for pr in list(self.preds):
+            pr.step(self.grid)
+            victims = [a for a in self.prey if (a.x, a.y) == (pr.x, pr.y)]
+            if victims:
+                victim = random.choice(victims)
+                pr.energy += self.pred_energy_gain
                 try:
-                    self.prey_list.remove(victim)
-                    events.append({"type": "predation", "predator": pred.id, "time": self.step_count})
+                    self.prey.remove(victim)
+                    events.append({"type":"predation","predator":pr.id,"prey":victim.id,"time":self.step_count})
                 except ValueError:
                     pass
             else:
-                pred.energy -= 0.5
-            if pred.try_reproduce():
-                child = Predator(self.next_agent_id, pred.x, pred.y,
-                                 pred.energy/2.0, self.pred_reproduce_prob, self.pred_mortality_prob)
-                self.next_agent_id += 1
-                new_preds.append(child)
-                events.append({"type": "birth", "species": "predator", "time": self.step_count})
-            if pred.try_starve():
-                dead_preds.append(pred)
-                events.append({"type": "death", "species": "predator", "time": self.step_count})
-        for d in dead_preds:
-            if d in self.pred_list:
-                self.pred_list.remove(d)
-        self.pred_list.extend(new_preds)
+                pr.energy -= 0.5
 
-        metrics = {"step": self.step_count,
-                   "prey_count": len(self.prey_list),
-                   "pred_count": len(self.pred_list)}
+            if pr.try_reproduce():
+                child = Predator(self.next_id, pr.x, pr.y, energy=pr.energy/2.0,
+                                 reproduce_prob=self.pred_reproduce_prob, mortality_prob=self.pred_mortality_prob)
+                self.next_id += 1
+                new_preds.append(child)
+                events.append({"type":"birth","species":"predator","agent":child.id,"time":self.step_count})
+
+            if pr.should_die():
+                dead_preds.append(pr)
+                events.append({"type":"death","species":"predator","agent":pr.id,"time":self.step_count})
+
+        for d in dead_preds:
+            try:
+                self.preds.remove(d)
+            except ValueError:
+                pass
+        self.preds.extend(new_preds)
+
+        metrics = {"step": self.step_count, "prey_count": len(self.prey), "pred_count": len(self.preds)}
         self.dc.record_step(metrics)
         for e in events:
             self.dc.record_event(e)
 
-    def run(self, steps):
+        return len(self.prey) == 0 and len(self.preds) == 0
+
+    def run(self, steps: int, realtime_log=False):
         t0 = time.time()
-        for _ in range(steps):
-            self.step()
-            if len(self.prey_list) == 0 and len(self.pred_list) == 0:
+        for _ in range(int(steps)):
+            extinct = self.step()
+            if realtime_log and self.step_count % 20 == 0:
+                print(f"Step {self.step_count}: prey={len(self.prey)} pred={len(self.preds)}")
+            if extinct:
                 break
         duration = time.time() - t0
-        return {"steps": self.step_count, "duration_seconds": duration,
-                "final_prey": len(self.prey_list), "final_predators": len(self.pred_list)}
+        summary = {"steps": self.step_count, "duration_seconds": duration,
+                   "final_prey": len(self.prey), "final_predators": len(self.preds)}
+        return summary
+
+
