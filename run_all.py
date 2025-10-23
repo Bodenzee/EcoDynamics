@@ -1,44 +1,114 @@
-import json, os, time
-from src.config_loader import load_config
-from src.main import run_abm
+import os
+import json
+from datetime import datetime
+from src.simulation import Simulation
+from src.models import lotka_volterra, logistic_hollingII
 
-def make_variations(base):
-    combos = [
-        {"grid_width":20,"grid_height":20,"pred_mortality_prob":0.01,"prey_reproduce_prob":0.05},
-        {"grid_width":30,"grid_height":30,"pred_mortality_prob":0.05,"prey_reproduce_prob":0.05},
-        {"grid_width":40,"grid_height":40,"pred_mortality_prob":0.10,"prey_reproduce_prob":0.05},
-        {"grid_width":20,"grid_height":20,"pred_mortality_prob":0.05,"prey_reproduce_prob":0.03},
-        {"grid_width":30,"grid_height":30,"pred_mortality_prob":0.01,"prey_reproduce_prob":0.08},
-        {"grid_width":40,"grid_height":40,"pred_mortality_prob":0.05,"prey_reproduce_prob":0.08},
-        {"grid_width":20,"grid_height":20,"pred_mortality_prob":0.10,"prey_reproduce_prob":0.03},
-        {"grid_width":30,"grid_height":30,"pred_mortality_prob":0.10,"prey_reproduce_prob":0.08},
-        {"grid_width":40,"grid_height":40,"pred_mortality_prob":0.01,"prey_reproduce_prob":0.03},
-        {"grid_width":30,"grid_height":30,"pred_mortality_prob":0.02,"prey_reproduce_prob":0.06}
-    ]
-    out = []
-    for i,c in enumerate(combos):
-        cfg = dict(base)
-        cfg.update(c)
-        cfg["run_id"] = i+1
-        cfg["seed"] = base.get("seed", 42) + i
-        out.append(cfg)
-    return out
+CONFIGS = [
+    {
+        "id": "run01_lv_baseline",
+        "model": lotka_volterra,
+        "params": {"alpha": 1.0, "beta": 0.1, "gamma": 1.5, "delta": 0.075},
+        "initial_state": (40, 9),
+        "t_span": (0, 50)
+    },
+    {
+        "id": "run02_lv_high_predation",
+        "model": lotka_volterra,
+        "params": {"alpha": 1.0, "beta": 0.15, "gamma": 1.5, "delta": 0.075},
+        "initial_state": (40, 9),
+        "t_span": (0, 50)
+    },
+    {
+        "id": "run03_lv_fast_growth",
+        "model": lotka_volterra,
+        "params": {"alpha": 1.2, "beta": 0.1, "gamma": 1.5, "delta": 0.075},
+        "initial_state": (40, 9),
+        "t_span": (0, 50)
+    },
+    {
+        "id": "run04_lv_longer_span",
+        "model": lotka_volterra,
+        "params": {"alpha": 1.0, "beta": 0.1, "gamma": 1.5, "delta": 0.075},
+        "initial_state": (40, 9),
+        "t_span": (0, 100)
+    },
+    {
+        "id": "run05_log_baseline",
+        "model": logistic_hollingII,
+        "params": {"r": 1.0, "K": 50, "a": 0.5, "h": 0.1, "gamma": 0.5, "e": 0.75},
+        "initial_state": (40, 9),
+        "t_span": (0, 50)
+    },
+    {
+        "id": "run06_log_high_capacity",
+        "model": logistic_hollingII,
+        "params": {"r": 1.0, "K": 80, "a": 0.5, "h": 0.1, "gamma": 0.5, "e": 0.75},
+        "initial_state": (40, 9),
+        "t_span": (0, 50)
+    },
+    {
+        "id": "run07_log_low_predation",
+        "model": logistic_hollingII,
+        "params": {"r": 1.0, "K": 50, "a": 0.3, "h": 0.1, "gamma": 0.5, "e": 0.75},
+        "initial_state": (40, 9),
+        "t_span": (0, 50)
+    },
+    {
+        "id": "run08_log_high_efficiency",
+        "model": logistic_hollingII,
+        "params": {"r": 1.0, "K": 50, "a": 0.5, "h": 0.1, "gamma": 0.5, "e": 0.95},
+        "initial_state": (40, 9),
+        "t_span": (0, 50)
+    },
+    {
+        "id": "run09_log_long_span",
+        "model": logistic_hollingII,
+        "params": {"r": 1.0, "K": 50, "a": 0.5, "h": 0.1, "gamma": 0.5, "e": 0.75},
+        "initial_state": (40, 9),
+        "t_span": (0, 100)
+    },
+    {
+        "id": "run10_log_fast_growth",
+        "model": logistic_hollingII,
+        "params": {"r": 1.5, "K": 50, "a": 0.5, "h": 0.1, "gamma": 0.5, "e": 0.75},
+        "initial_state": (40, 9),
+        "t_span": (0, 50)
+    }
+]
+
+def run_single(cfg):
+    sim = Simulation(
+        model=cfg["model"],
+        params=cfg["params"],
+        t_span=cfg["t_span"],
+        initial_state=cfg["initial_state"]
+    )
+    data = sim.run()
+
+    summary_path = os.path.join(sim.output_dir, "summary.json")
+    with open(summary_path) as f:
+        summary = json.load(f)
+
+    summary["id"] = cfg["id"]
+    return summary
 
 def main():
-    base = load_config("configs/default.json")
-    runs = make_variations(base)
-    index = []
-    out_dir = base.get("out_dir","data")
-    os.makedirs(out_dir, exist_ok=True)
-    for cfg in runs:
-        t0 = time.time()
-        folder, summary = run_abm(cfg)
-        elapsed = time.time() - t0
-        entry = {"run_id": cfg["run_id"], "params": {"grid_width": cfg["grid_width"], "grid_height": cfg["grid_height"], "prey_reproduce_prob": cfg["prey_reproduce_prob"], "pred_mortality_prob": cfg["pred_mortality_prob"]}, "duration_seconds": elapsed, "summary": summary, "folder": folder}
-        index.append(entry)
-        with open(os.path.join(out_dir, "runs_index.json"), "w") as f:
-            json.dump(index, f, indent=2)
-    print("Batch complete. Index saved to", os.path.join(out_dir,"runs_index.json"))
+    print("\n🔁 Running batch simulations for EcoDynamics...\n")
+    os.makedirs("data", exist_ok=True)
+    summaries = []
+
+    for cfg in CONFIGS:
+        print(f"--- Starting {cfg['id']} ---")
+        result = run_single(cfg)
+        summaries.append(result)
+
+    index_file = os.path.join("data", f"runs_index_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+    with open(index_file, "w") as f:
+        json.dump(summaries, f, indent=4)
+
+    print(f"\n✅ Batch complete. {len(summaries)} runs saved in {index_file}\n")
 
 if __name__ == "__main__":
     main()
+
