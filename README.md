@@ -69,3 +69,8 @@ Run the following for batch simulation
 ```bash
 python run_all.py
 ```
+Run the following to plot latest simulation results
+```bash
+python src/plot_results.py
+```
+
